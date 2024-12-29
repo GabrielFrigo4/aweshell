@@ -27,7 +27,7 @@ So I wrote `aweshell.el` to extend `eshell` with these features:
 
 # Installation
 
-Put `aweshell.el`, `eshell-prompt-extras.el`, `exec-path-from-shell.el` to your load-path.
+Put [`aweshell.el`](https://github.com/manateelazycat/aweshell/blob/master/aweshell.el), [`eshell-did-you-mean.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-did-you-mean.el), [`eshell-prompt-extras.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-prompt-extras.el), [`eshell-up.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-up.el), [`exec-path-from-shell.el`](https://github.com/manateelazycat/aweshell/blob/master/exec-path-from-shell.el) to your load-path.
 The load-path is usually ~/elisp/.
 It's set in your ~/.emacs like this:
 ```Elisp
@@ -55,10 +55,12 @@ If you prefer to use a package manager, you can use [quelpa-use-package](https:/
 
 ```Elisp
 (use-package aweshell
-  :quelpa (abc-mode :fetcher github :repo "manateelazycat/aweshell"))
+  :quelpa (aweshell :fetcher github :repo "manateelazycat/aweshell"))
 ```
 
 # Customize
+
+[eshell-prompt-extras](https://github.com/kaihaosw/eshell-prompt-extras#themes)
 
 Customize variables below by:
 ```Elisp
@@ -73,8 +75,6 @@ aweshell-use-exec-path-from-shell
 aweshell-dedicated-window-height
 ```
 
-Customize prompt as directed in [eshell-prompt-extras' README](https://github.com/kaihaosw/eshell-prompt-extras#themes).
-
 ## Dedicated window
 You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at bottom of frame.
 
@@ -82,7 +82,7 @@ You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at b
 
 ## Aliases
 
-[eshell-up](https://github.com/peterwvj/eshell-up)
+[eshell-up](https://github.com/peterwvj/eshell-up#usage)
 
 In alias file:
 ```
@@ -95,6 +95,10 @@ Other customization of eshell-up:
 (setq eshell-up-ignore-case nil)
 (setq eshell-up-print-parent-dir t)
 ```
+
+## Ensure Environment Variables
+
+[exec-path-from-shell](https://github.com/purcell/exec-path-from-shell#usage)
 
 ### FAQ
 If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
