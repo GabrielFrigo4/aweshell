@@ -55,7 +55,7 @@ If you prefer to use a package manager, you can use [quelpa-use-package](https:/
 
 ```Elisp
 (use-package aweshell
-  :quelpa (aweshell :fetcher github :repo "manateelazycat/aweshell"))
+  :quelpa (aweshell :fetcher github :repo "GabrielFrigo4/aweshell"))
 ```
 
 # Customize
