@@ -25,7 +25,7 @@ So I wrote `aweshell.el` to extend `eshell` with these features:
 15. Complete shell command arguments like IDE feeling.
 16. Dedicated shell window like IDE bottom terminal window.
 
-# Installation Manually
+# Installing Manually
 
 Put this files to your `load-path`.
  - [`aweshell.el`](https://github.com/manateelazycat/aweshell/blob/master/aweshell.el)
