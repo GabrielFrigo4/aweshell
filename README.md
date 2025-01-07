@@ -58,9 +58,13 @@ If you prefer to use a package manager, you can use [quelpa-use-package](https:/
   :quelpa (aweshell :fetcher github :repo "GabrielFrigo4/aweshell"))
 ```
 
-# Customize
+# Aweshell
 
-[eshell-prompt-extras](https://github.com/kaihaosw/eshell-prompt-extras#themes)
+## Eshell-Did-You-Mean
+
+## Eshell-Prompt-Extras
+
+[eshell-prompt-extras](https://github.com/kaihaosw/eshell-prompt-extras)
 
 Customize variables below by:
 ```Elisp
@@ -75,30 +79,17 @@ aweshell-use-exec-path-from-shell
 aweshell-dedicated-window-height
 ```
 
-## Dedicated window
-You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at bottom of frame.
+## Eshell-UP
 
-<img src="./aweshell-dedicated.gif">
+[eshell-up](https://github.com/peterwvj/eshell-up)
 
-## Aliases
+Emacs package for quickly navigating to a specific parent directory in `eshell` without having to repeatedly typing `cd ..`.
 
-[eshell-up](https://github.com/peterwvj/eshell-up#usage)
+## Exec-Path-From-Shell
 
-In alias file:
-```
-alias up eshell-up $1
-alias pk eshell-up-peek $1
-```
+[exec-path-from-shell](https://github.com/purcell/exec-path-from-shell)
 
-Other customization of eshell-up:
-```Elisp
-(setq eshell-up-ignore-case nil)
-(setq eshell-up-print-parent-dir t)
-```
+A GNU Emacs library to ensure environment variables inside Emacs look the same as in the user's shell.
 
-## Ensure Environment Variables
-
-[exec-path-from-shell](https://github.com/purcell/exec-path-from-shell#usage)
-
-### FAQ
+# FAQ
 If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
