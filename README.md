@@ -25,19 +25,25 @@ So I wrote `aweshell.el` to extend `eshell` with these features:
 15. Complete shell command arguments like IDE feeling.
 16. Dedicated shell window like IDE bottom terminal window.
 
-# Installation
+# Installation Manually
 
-Put [`aweshell.el`](https://github.com/manateelazycat/aweshell/blob/master/aweshell.el), [`eshell-did-you-mean.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-did-you-mean.el), [`eshell-prompt-extras.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-prompt-extras.el), [`eshell-up.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-up.el), [`exec-path-from-shell.el`](https://github.com/manateelazycat/aweshell/blob/master/exec-path-from-shell.el) to your load-path.
-The load-path is usually ~/elisp/.
-It's set in your ~/.emacs like this:
-```Elisp
+Put this files to your `load-path`.
+ - [`aweshell.el`](https://github.com/manateelazycat/aweshell/blob/master/aweshell.el)
+ - [`eshell-did-you-mean.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-did-you-mean.el)
+ - [`eshell-prompt-extras.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-prompt-extras.el)
+ - [`eshell-up.el`](https://github.com/manateelazycat/aweshell/blob/master/eshell-up.el)
+ - [`exec-path-from-shell.el`](https://github.com/manateelazycat/aweshell/blob/master/exec-path-from-shell.el) 
+
+The `load-path` is usually `~/elisp/`.
+It's set in your `~/.emacs` like this:
+```elisp
 (add-to-list 'load-path (expand-file-name "~/elisp"))
 (require 'aweshell)
 ```
 
 Bind your favorite key to functions:
 
-```Elisp
+```elisp
 aweshell-new
 aweshell-next
 aweshell-prev
@@ -49,47 +55,48 @@ aweshell-dedicated-open
 aweshell-dedicated-close
 ```
 
-## Installing with Quelpa
+# Installing with Quelpa
 
 If you prefer to use a package manager, you can use [quelpa-use-package](https://github.com/quelpa/quelpa-use-package).
 
-```Elisp
+```elisp
+;; Install Aweshell
 (use-package aweshell
   :quelpa (aweshell :fetcher github :repo "GabrielFrigo4/aweshell"))
 ```
 
-# Aweshell
+# Aweshell Files
+These are the aweshell project files
+
+## Aweshell
+[aweshell](https://github.com/GabrielFrigo4/aweshell)
+
+Main file in aweshell project
 
 ## Eshell-Did-You-Mean
+[eshell-did-uou-mean](https://github.com/GabrielFrigo4/aweshell)
+
+Autocomplete for aweshell prompt
 
 ## Eshell-Prompt-Extras
-
 [eshell-prompt-extras](https://github.com/kaihaosw/eshell-prompt-extras)
 
-Customize variables below by:
-```Elisp
-M-x customize-group RET aweshell RET
-```
-
-```Elisp
-aweshell-complete-selection-key
-aweshell-clear-buffer-key
-aweshell-sudo-toggle-key
-aweshell-use-exec-path-from-shell
-aweshell-dedicated-window-height
-```
+Display extra information and color for your eshell prompt.
 
 ## Eshell-UP
-
 [eshell-up](https://github.com/peterwvj/eshell-up)
 
 Emacs package for quickly navigating to a specific parent directory in `eshell` without having to repeatedly typing `cd ..`.
 
 ## Exec-Path-From-Shell
-
 [exec-path-from-shell](https://github.com/purcell/exec-path-from-shell)
 
 A GNU Emacs library to ensure environment variables inside Emacs look the same as in the user's shell.
 
 # FAQ
 If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
+
+# Dedicated window
+You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at bottom of frame.
+
+<img src="./aweshell-dedicated.gif">
