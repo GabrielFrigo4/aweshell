@@ -93,10 +93,13 @@ Emacs package for quickly navigating to a specific parent directory in `eshell` 
 
 A GNU Emacs library to ensure environment variables inside Emacs look the same as in the user's shell.
 
-# FAQ
-If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
+# How To Use Aweshell
+In theory, just by opening eshell you will already be using Aweshell. However, you can modify this default behavior
 
-# Dedicated window
+## Dedicated window
 You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at bottom of frame.
 
 <img src="./aweshell-dedicated.gif">
+
+# FAQ
+If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
