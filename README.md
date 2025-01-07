@@ -68,29 +68,19 @@ If you prefer to use a package manager, you can use [quelpa-use-package](https:/
 # Aweshell Files
 These are the aweshell project files
 
-## Aweshell
-[aweshell](https://github.com/GabrielFrigo4/aweshell)
-
+## [Aweshell](https://github.com/GabrielFrigo4/aweshell)
 Main file in aweshell project
 
-## Eshell-Did-You-Mean
-[eshell-did-uou-mean](https://github.com/GabrielFrigo4/aweshell)
-
+## [Eshell-Did-You-Mean](https://github.com/GabrielFrigo4/aweshell)
 Autocomplete for aweshell prompt
 
-## Eshell-Prompt-Extras
-[eshell-prompt-extras](https://github.com/kaihaosw/eshell-prompt-extras)
-
+## [Eshell-Prompt-Extras](https://github.com/kaihaosw/eshell-prompt-extras)
 Display extra information and color for your eshell prompt.
 
-## Eshell-UP
-[eshell-up](https://github.com/peterwvj/eshell-up)
-
+## [Eshell-UP](https://github.com/peterwvj/eshell-up)
 Emacs package for quickly navigating to a specific parent directory in `eshell` without having to repeatedly typing `cd ..`.
 
-## Exec-Path-From-Shell
-[exec-path-from-shell](https://github.com/purcell/exec-path-from-shell)
-
+## [Exec-Path-From-Shell](https://github.com/purcell/exec-path-from-shell)
 A GNU Emacs library to ensure environment variables inside Emacs look the same as in the user's shell.
 
 # How To Use Aweshell
