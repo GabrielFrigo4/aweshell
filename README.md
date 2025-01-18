@@ -47,12 +47,15 @@ Bind your favorite key to functions:
 aweshell-new
 aweshell-next
 aweshell-prev
-aweshell-clear-buffer
+aweshell-toggle
 aweshell-sudo-toggle
+aweshell-autosuggest
+aweshell-clear-buffer
 aweshell-switch-buffer
-aweshell-dedicated-toggle
+aweshell-search-history
 aweshell-dedicated-open
 aweshell-dedicated-close
+aweshell-dedicated-toggle
 ```
 
 # Installing with Quelpa
