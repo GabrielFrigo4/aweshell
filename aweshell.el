@@ -1,7 +1,7 @@
-;;; aweshell.el --- Awesome eshell
+;;; aweshell.el --- Awesome Eshell
 
 ;; Filename: aweshell.el
-;; Description: Awesome eshell
+;; Description: Awesome Eshell
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2018, Andy Stewart, all rights reserved.

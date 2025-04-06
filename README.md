@@ -1,6 +1,6 @@
 <img src="./aweshell.gif">
 
-# What is aweshell?
+# What is Aweshell?
 
 I created `multi-term.el` and use it many years.
 
