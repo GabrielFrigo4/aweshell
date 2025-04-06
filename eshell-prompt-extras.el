@@ -404,11 +404,15 @@ returns a string."
 ;;     (and (eshell-search-path "git")
 ;;          (string= "true" (epe-trim-newline (shell-command-to-string command))))))
 
+(defvar epe-git-enable t
+  "Enable git status in Eshell.")
+
 (defun epe-git-p ()
   "If you installed git and in a git project."
   (unless (epe-remote-p)                ; Work-around for issue #20
-    (and (eshell-search-path "git")
-         (vc-find-root (eshell/pwd) ".git"))))
+    (if (eq epe-git-enable t)
+        (and (eshell-search-path "git") (vc-find-root (eshell/pwd) ".git"))
+      nil)))
 
 (defun epe-git-short-sha1 ()
   "Return the short sha1 of your git commit."
