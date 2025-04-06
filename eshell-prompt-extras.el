@@ -396,7 +396,6 @@ returns a string."
       (tramp-file-name-real-host (tramp-dissect-file-name default-directory))
     (tramp-file-name-host (tramp-dissect-file-name default-directory))))
 
-
 ;; git info
 ;; (defun epe-git-p ()
 ;;   "If you installed git and in a git project."
