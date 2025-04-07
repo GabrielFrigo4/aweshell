@@ -647,10 +647,14 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                        ;; Command exists?
                        (executable-find command)
                        ;; Or command is an alias?
-                       (seq-contains (eshell-alias-completions "") command)
+                       (seq-contains-p (eshell-alias-completions "") command)
+                       ;; Or command is an eshell/alias?
+                       (seq-contains-p (eshell-alias-completions "") (concat "eshell/" command))
                        ;; Or it is ../. ?
                        (or (equal command "..")
                            (equal command ".")
+                           (equal command "/")
+                           (equal command "~")
                            (equal command "exit"))
                        ;; Or it is a file in current dir?
                        (member (file-name-base command) (directory-files default-directory))
