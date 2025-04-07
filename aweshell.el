@@ -642,14 +642,14 @@ This advice can make `other-window' skip `aweshell' dedicated window."
         (put-text-property
          beg end
          'face `(:foreground
-                 ,(if
-                      (and (string-prefix-p "(" command)
-                           (condition-case nil
-                               (progn
-                                 (read command)
-                                 t)
-                             (error nil)))
-                      (or
+                 ,(if (or
+                       ;; Is valid lisp form?
+                       (and (string-prefix-p "(" command)
+                            (condition-case nil
+                                (progn
+                                  (read command)
+                                  t)
+                              (error nil)))
                        ;; Command exists?
                        (executable-find command)
                        ;; Or command is an alias?
@@ -668,7 +668,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                        (functionp (intern command))
                        ;; Or it is a eshell/elisp function
                        (functionp (intern (concat "eshell/" command))))
-                    aweshell-valid-command-color
+                      aweshell-valid-command-color
                     aweshell-invalid-command-color)))
         (put-text-property beg end 'rear-nonsticky t)))))
 
