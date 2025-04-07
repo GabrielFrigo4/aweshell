@@ -639,7 +639,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
           (end (match-end 1))
           (command (match-string 1)))
       (when command
-        (replace-regexp-in-string "[()]" "" command)
+        (setq command (replace-regexp-in-string "[()]" "" command))
         (put-text-property
          beg end
          'face `(:foreground
