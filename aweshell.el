@@ -632,7 +632,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   (save-excursion
     (let (end (line-end-position))
       (forward-line 0)
-      (re-search-forward (format "%s\\([^ \t\r\n\v\f]*\\)" eshell-prompt-regexp)
+      (re-search-forward (format "%s\\(\\(?:([ \t]*\\)?\\([^ \t\r\n\v\f()]+\\)\\)" eshell-prompt-regexp)
                          end
                          t))
     (let ((beg (match-beginning 1))
@@ -643,13 +643,6 @@ This advice can make `other-window' skip `aweshell' dedicated window."
          beg end
          'face `(:foreground
                  ,(if (or
-                       ;; Is valid lisp form?
-                       (and (string-prefix-p "(" command)
-                            (condition-case nil
-                                (progn
-                                  (read command)
-                                  t)
-                              (error nil)))
                        ;; Command exists?
                        (executable-find command)
                        ;; Or command is an alias?
