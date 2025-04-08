@@ -701,7 +701,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 
 (add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
 (add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
-(add-hook 'buffer-list-update-hook #'aweshell--maybe-toggle-validation-timer)
+(add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-validation-timer)
 
 (defun aweshell-emacs (&rest args)
   "Open a file in Emacs with ARGS, Some habits die hard."
