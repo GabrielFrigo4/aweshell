@@ -633,8 +633,9 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-pipeline))
 
-;; Validate command before post and delay to eshell.
+;; Validate command to eshell after delay.
 (defun aweshell-validate-command ()
+  "Validate command to eshell after delay."
   (save-excursion
     (let (end (line-end-position))
       (forward-line 0)
@@ -674,11 +675,17 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (defvar aweshell-validate-timer nil
   "Idle timer for validating eshell command.")
 
-(defvar aweshell-validate-delay (expt 2 -2)
+(defvar aweshell-validate-delay (expt 2 -3)
   "Idle timer delay for validating eshell command.")
+
+(defvar aweshell-validate-sleep (expt 2 1)
+  "Idle timer sleep for start validating eshell command.")
 
 (defun aweshell-start-validation-timer ()
   "Start idle timer for command validation in eshell."
+  (let ((end-time (+ (float-time) aweshell-validate-sleep)))
+    (while (< (float-time) end-time)
+      (accept-process-output nil (expt 10 -3))))
   (setq aweshell--validate-timer
         (run-with-idle-timer aweshell-validate-delay t #'aweshell-validate-command)))
 
