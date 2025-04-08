@@ -657,11 +657,11 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                        ;; Or command is an eshell/alias?
                        (seq-contains-p (eshell-alias-completions "eshell/") command)
                        ;; Or it is ../. ?
-                       (or (equal command "..")
-                           (equal command ".")
-                           (equal command "/")
-                           (equal command "~")
-                           (equal command "exit"))
+                       (equal command "..")
+                       (equal command ".")
+                       (equal command "/")
+                       (equal command "~")
+                       (equal command "exit")
                        ;; Or it is a file in current dir?
                        (member (file-name-base command) (directory-files default-directory))
                        ;; Or it is a elisp function
@@ -675,7 +675,9 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (defvar aweshell-validate-timer nil
   "Idle timer for validating eshell command.")
 
-(defvar aweshell-validate-delay (expt 2 -3)
+(make-variable-buffer-local 'aweshell--validate-timer)
+
+(defvar aweshell-validate-delay (expt 2 -4)
   "Idle timer delay for validating eshell command.")
 
 (defun aweshell-start-validation-timer ()
