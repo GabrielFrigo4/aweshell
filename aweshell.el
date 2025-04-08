@@ -634,44 +634,57 @@ This advice can make `other-window' skip `aweshell' dedicated window."
         eshell-prompt-function 'epe-theme-pipeline))
 
 ;; Validate command to eshell after delay.
+(defvar aweshell-validate-executable t
+  "Search executable in `exec-path` for validating eshell command.")
+
 (defun aweshell-validate-command ()
-  "Validate command to eshell after delay."
+  "Validate all commands in eshell input line."
   (when (derived-mode-p 'eshell-mode)
     (save-excursion
-      (let (end (line-end-position))
-        (forward-line 0)
-        (re-search-forward (format "%s[ \t(]*\\([^ ()\t\r\n\v\f]*\\)[ \t)]*" eshell-prompt-regexp)
-                           end
-                           t))
-      (let ((beg (match-beginning 1))
-            (end (match-end 1))
-            (command (match-string 1)))
-        (when command
-          (put-text-property
-           beg end
-           'face `(:foreground
-                   ,(if (or
-                         ;; Command exists?
-                         (executable-find command)
-                         ;; Or command is an alias?
-                         (seq-contains-p (eshell-alias-completions "") command)
-                         ;; Or command is an eshell/alias?
-                         (seq-contains-p (eshell-alias-completions "eshell/") command)
-                         ;; Or it is ../. ?
-                         (equal command "..")
-                         (equal command ".")
-                         (equal command "/")
-                         (equal command "~")
-                         (equal command "exit")
-                         ;; Or it is a file in current dir?
-                         (member (file-name-base command) (directory-files default-directory))
-                         ;; Or it is a elisp function
-                         (functionp (intern command))
-                         ;; Or it is a eshell/elisp function
-                         (functionp (intern (concat "eshell/" command))))
-                        aweshell-valid-command-color
-                      aweshell-invalid-command-color)))
-          (put-text-property beg end 'rear-nonsticky t))))))
+      (let ((line (buffer-substring-no-properties
+                   (line-beginning-position)
+                   (line-end-position)))
+            (prompt-regexp eshell-prompt-regexp))
+        ;; Remove prompt to get actual command line
+        (when (string-match prompt-regexp line)
+          (setq line (substring line (match-end 0))))
+        ;; Split the line into tokens based on shell separators
+        (let ((tokens (split-string line "[|&;]+" t "[ ()\t\r\n\v\f]+")))
+          (goto-char (line-beginning-position))
+          (dolist (token tokens)
+            ;; Remove leading/trailing spaces/quotes
+            (let* ((command (car (split-string token "[ \t]+" t)))
+                   (pos (search-forward command (line-end-position) t)))
+              (when (and command pos)
+                (let ((beg (- pos (length command)))
+                      (end pos))
+                  (put-text-property
+                   beg end
+                   'face `(:foreground
+                           ,(if (or
+                                 ;; Command is an executable?
+                                 (if (equal aweshell-validate-executable t)
+                                     (executable-find command)
+                                   nil)
+                                 ;; Or command is an alias?
+                                 (seq-contains-p (eshell-alias-completions "") command)
+                                 ;; Or command is an eshell/alias?
+                                 (seq-contains-p (eshell-alias-completions "eshell/") command)
+                                 ;; Or it is ../. ?
+                                 (equal command "..")
+                                 (equal command ".")
+                                 (equal command "/")
+                                 (equal command "~")
+                                 (equal command "exit")
+                                 ;; Or it is a file in current dir?
+                                 (member (file-name-base command) (directory-files default-directory))
+                                 ;; Or it is a elisp function
+                                 (functionp (intern command))
+                                 ;; Or it is a eshell/elisp function
+                                 (functionp (intern (concat "eshell/" command))))
+                                aweshell-valid-command-color
+                              aweshell-invalid-command-color)))
+                  (put-text-property beg end 'rear-nonsticky t))))))))))
 
 (defvar aweshell-validate-timer nil
   "Idle timer for validating eshell command.")
