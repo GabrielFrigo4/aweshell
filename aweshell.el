@@ -677,7 +677,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Idle timer for validating eshell command.")
 (make-variable-buffer-local 'aweshell--validate-timer)
 
-(defvar aweshell-validate-delay (expt 2 -4)
+(defvar aweshell-validate-delay (expt 2 -1)
   "Idle timer delay for validating eshell command.")
 
 (defun aweshell-start-validation-timer ()
