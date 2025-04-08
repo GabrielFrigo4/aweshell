@@ -691,8 +691,17 @@ This advice can make `other-window' skip `aweshell' dedicated window."
     (cancel-timer aweshell-validate-timer)
     (setq aweshell-validate-timer nil)))
 
+(defun aweshell-maybe-toggle-validation-timer ()
+  "Start or stop the Eshell validation timer based on current buffer."
+  (if (derived-mode-p 'eshell-mode)
+      (unless aweshell-validate-timer
+        (aweshell-start-validation-timer))
+    (when aweshell-validate-timer
+      (aweshell-stop-validation-timer))))
+
 (add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
 (add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
+(add-hook 'buffer-list-update-hook #'aweshell--maybe-toggle-validation-timer)
 
 (defun aweshell-emacs (&rest args)
   "Open a file in Emacs with ARGS, Some habits die hard."
