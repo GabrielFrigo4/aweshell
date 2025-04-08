@@ -93,6 +93,7 @@
 ;; `aweshell-search-history-key'
 ;;
 ;; `aweshell-valid-command-color'
+;; `aweshell-neutral-command-color'
 ;; `aweshell-invalid-command-color'
 ;; `aweshell-use-exec-path-from-shell'
 ;; `aweshell-dedicated-window-height'
@@ -254,6 +255,11 @@
 
 (defcustom aweshell-valid-command-color "#98C379"
   "The color of valid command by `aweshell-validate-command'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-neutral-command-color "#D4D4D4"
+  "The color of neutral command by `aweshell-validate-command'."
   :type 'string
   :group 'aweshell)
 
@@ -627,7 +633,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-pipeline))
 
-;; Validate command before post to eshell.
+;; Validate command before post and delay to eshell.
 (defun aweshell-validate-command ()
   (save-excursion
     (let (end (line-end-position))
@@ -648,7 +654,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                        ;; Or command is an alias?
                        (seq-contains-p (eshell-alias-completions "") command)
                        ;; Or command is an eshell/alias?
-                       (seq-contains-p (eshell-alias-completions "") (concat "eshell/" command))
+                       (seq-contains-p (eshell-alias-completions "eshell/") command)
                        ;; Or it is ../. ?
                        (or (equal command "..")
                            (equal command ".")
@@ -665,9 +671,25 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                     aweshell-invalid-command-color)))
         (put-text-property beg end 'rear-nonsticky t)))))
 
-(add-hook 'eshell-mode-hook
-          (lambda ()
-            (add-hook 'post-command-hook #'aweshell-validate-command t t)))
+(defvar aweshell-validate-timer nil
+  "Idle timer for validating eshell command.")
+
+(defvar aweshell-validate-delay (expt 2 -2)
+  "Idle timer delay for validating eshell command.")
+
+(defun aweshell-start-validation-timer ()
+  "Start idle timer for command validation in eshell."
+  (setq aweshell--validate-timer
+        (run-with-idle-timer aweshell-validate-delay t #'aweshell-validate-command)))
+
+(defun aweshell-stop-validation-timer ()
+  "Stop the idle timer used for command validation."
+  (when (timerp aweshell--validate-timer)
+    (cancel-timer aweshell--validate-timer)
+    (setq aweshell--validate-timer nil)))
+
+(add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
+(add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
 
 (defun aweshell-emacs (&rest args)
   "Open a file in Emacs with ARGS, Some habits die hard."
