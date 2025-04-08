@@ -678,22 +678,16 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (defvar aweshell-validate-delay (expt 2 -3)
   "Idle timer delay for validating eshell command.")
 
-(defvar aweshell-validate-sleep (expt 2 1)
-  "Idle timer sleep for start validating eshell command.")
-
 (defun aweshell-start-validation-timer ()
   "Start idle timer for command validation in eshell."
-  (let ((end-time (+ (float-time) aweshell-validate-sleep)))
-    (while (< (float-time) end-time)
-      (accept-process-output nil (expt 10 -3))))
-  (setq aweshell--validate-timer
+  (setq aweshell-validate-timer
         (run-with-idle-timer aweshell-validate-delay t #'aweshell-validate-command)))
 
 (defun aweshell-stop-validation-timer ()
   "Stop the idle timer used for command validation."
-  (when (timerp aweshell--validate-timer)
-    (cancel-timer aweshell--validate-timer)
-    (setq aweshell--validate-timer nil)))
+  (when (timerp aweshell-validate-timer)
+    (cancel-timer aweshell-validate-timer)
+    (setq aweshell-validate-timer nil)))
 
 (add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
 (add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
