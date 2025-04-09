@@ -268,6 +268,21 @@
   :type 'string
   :group 'aweshell)
 
+(defcustom aweshell-valid-string-color "#DB8E73"
+  "The color of valid string by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-valid-scape-color "#339CDB"
+  "The color of valid string by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-valid-separator-color "#339CDB"
+  "The color of valid separator by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
 (defface aweshell-alert-buffer-face
   '((t (:foreground "#ff2d55" :bold t)))
   "Alert buffer face."
@@ -633,7 +648,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-pipeline))
 
-;; Validate command to eshell after delay.
+;; Validate prompt (command, separator and string) to eshell after delay.
 (defvar aweshell-validate-executable t
   "Search executable in `exec-path` for validating eshell command.")
 
@@ -686,6 +701,48 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                               aweshell-invalid-command-color)))
                   (put-text-property beg end 'rear-nonsticky t))))))))))
 
+(defun aweshell-validate-separator ()
+  "Highlight command separators ; | & in eshell input line, ignoring ones inside strings."
+  (when (derived-mode-p 'eshell-mode)
+    (save-excursion
+      (let ((line (buffer-substring-no-properties
+                   (line-beginning-position)
+                   (line-end-position)))
+            (prompt-regexp eshell-prompt-regexp))
+        (when (string-match prompt-regexp line)
+          (setq line (substring line (match-end 0))))
+        (goto-char (line-beginning-position))
+        (let ((case-fold-search nil))
+          (while (re-search-forward
+                  ;; Match only quoted strings (handling escaped characters inside)
+                  "\\([;|&]+\\)"
+                  (line-end-position) t)
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'face `(:foreground ,aweshell-valid-separator-color))
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'rear-nonsticky t)))))))
+
+(defun aweshell-validate-string ()
+  "Highlight quoted strings in eshell input line, including escaped characters inside quotes."
+  (when (derived-mode-p 'eshell-mode)
+    (save-excursion
+      (let ((line (buffer-substring-no-properties
+                   (line-beginning-position)
+                   (line-end-position)))
+            (prompt-regexp eshell-prompt-regexp))
+        (when (string-match prompt-regexp line)
+          (setq line (substring line (match-end 0))))
+        (goto-char (line-beginning-position))
+        (let ((case-fold-search nil))
+          (while (re-search-forward
+                  ;; Match only quoted strings (handling escaped characters inside)
+                  "\\(\"\\(?:\\\\.\\|[^\"\\]\\)*\"\\|'\\([^']*\\)'\\)"
+                  (line-end-position) t)
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'face `(:foreground ,aweshell-valid-string-color))
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'rear-nonsticky t)))))))
+
 (defvar aweshell-validate-timer nil
   "Idle timer for validating eshell command.")
 (make-variable-buffer-local 'aweshell--validate-timer)
@@ -696,7 +753,10 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (defun aweshell-start-validation-timer ()
   "Start idle timer for command validation in eshell."
   (setq aweshell-validate-timer
-        (run-with-idle-timer aweshell-validate-delay t #'aweshell-validate-command)))
+        (run-with-idle-timer aweshell-validate-delay t (lambda () 
+                                                         (aweshell-validate-command)
+                                                         (aweshell-validate-separator)
+                                                         (aweshell-validate-string)))))
 
 (defun aweshell-stop-validation-timer ()
   "Stop the idle timer used for command validation."
