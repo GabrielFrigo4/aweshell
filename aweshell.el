@@ -320,6 +320,7 @@ If this function affects you, disable this option."
 
 (defun aweshell-update-custom-color ()
   "Update custom colors when theme is load"
+  (interactive)
   (setq-default aweshell-valid-command-color "#98C379")
   (setq-default aweshell-neutral-command-color (face-foreground 'default))
   (setq-default aweshell-invalid-command-color "#FF0000")
