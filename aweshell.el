@@ -220,6 +220,7 @@
 ;;; Code:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; OS Config ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar aweshell-use-exec-path-from-shell t)
 
 (when (and aweshell-use-exec-path-from-shell
@@ -229,6 +230,7 @@
   (exec-path-from-shell-initialize))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Customize ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defgroup aweshell nil
   "Multi eshell manager."
   :group 'aweshell)
@@ -253,33 +255,38 @@
   :type 'string
   :group 'aweshell)
 
-(defcustom aweshell-valid-command-color "#98C379"
+(defcustom aweshell-valid-command-color nil
   "The color of valid command by `aweshell-validate-command'."
   :type 'string
   :group 'aweshell)
 
-(defcustom aweshell-neutral-command-color "#D4D4D4"
+(defcustom aweshell-neutral-command-color nil
   "The color of neutral command by `aweshell-validate-command'."
   :type 'string
   :group 'aweshell)
 
-(defcustom aweshell-invalid-command-color "#FF0000"
+(defcustom aweshell-invalid-command-color nil
   "The color of invalid command by `aweshell-validate-command'."
   :type 'string
   :group 'aweshell)
 
-(defcustom aweshell-valid-string-color (face-foreground 'font-lock-string-face)
-  "The color of valid string by `aweshell-validate-string'."
-  :type 'string
-  :group 'aweshell)
-
-(defcustom aweshell-valid-scape-color "#339CDB"
-  "The color of valid string by `aweshell-validate-string'."
-  :type 'string
-  :group 'aweshell)
-
-(defcustom aweshell-valid-separator-color "#339CDB"
+(defcustom aweshell-valid-separator-color nil
   "The color of valid separator by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-valid-constant-color nil
+  "The color of valid constant by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-valid-string-color nil
+  "The color of valid string by `aweshell-validate-string'."
+  :type 'string
+  :group 'aweshell)
+
+(defcustom aweshell-valid-scape-color nil
+  "The color of valid scape by `aweshell-validate-string'."
   :type 'string
   :group 'aweshell)
 
@@ -311,7 +318,19 @@ If this function affects you, disable this option."
   :type 'function
   :group 'aweshell)
 
+(defun aweshell-update-custom-color ()
+  "Update custom colors when theme is load"
+  (setq-default aweshell-valid-command-color "#98C379")
+  (setq-default aweshell-neutral-command-color (face-foreground 'default))
+  (setq-default aweshell-invalid-command-color "#FF0000")
+  (setq-default aweshell-valid-separator-color (face-foreground 'font-lock-escape-face))
+  (setq-default aweshell-valid-constant-color (face-foreground 'font-lock-constant-face))
+  (setq-default aweshell-valid-string-color (face-foreground 'font-lock-string-face))
+  (setq-default aweshell-valid-scape-color (face-foreground 'font-lock-escape-face)))
+(add-hook 'after-load-theme-hook #'aweshell-update-custom-color)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar aweshell-buffer-list nil
   "The list of non-dedicated eshell buffers.")
 
@@ -320,6 +339,7 @@ If this function affects you, disable this option."
 (add-hook 'kill-buffer-hook 'aweshell-kill-buffer-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilise Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun aweshell-kill-buffer-hook ()
   "Function that hook `kill-buffer-hook'."
   (when (eq major-mode 'eshell-mode)
@@ -503,6 +523,7 @@ Create new one if no eshell buffer exists."
       (format "  <%s> %s" (eshell-get-history 0) (if eshell-current-command "(Running)" "")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Aweshell dedicated window ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar aweshell-dedicated-window nil
   "The dedicated `aweshell' window.")
 
@@ -626,6 +647,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
             (face-remap-add-relative 'hl-line :background (face-background 'default))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Aweshell keymap ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (add-hook 'eshell-mode-hook
           (lambda ()
             (define-key eshell-mode-map (kbd aweshell-clear-buffer-key) 'aweshell-clear-buffer)
