@@ -755,6 +755,18 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
 (add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-validation-timer)
 
+(defun aweshell-highlight-prompt ()
+  "Highlight the eshell prompt with `aweshell-neutral-command-color`."
+  (when (derived-mode-p 'eshell-mode)
+    (save-excursion
+      (let ((prompt-regexp eshell-prompt-regexp))
+        (goto-char (line-beginning-position))
+        (when (looking-at prompt-regexp)
+          (put-text-property (match-beginning 0) (match-end 0)
+                             'face `(:foreground ,aweshell-neutral-command-color))
+          (put-text-property (match-beginning 0) (match-end 0)
+                             'rear-nonsticky t))))))
+
 (defun aweshell-highlight-command ()
   "Highlight all commands in eshell input line."
   (when (derived-mode-p 'eshell-mode)
@@ -834,6 +846,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Start idle timer for command highlight in eshell."
   (setq aweshell-highlight-timer
         (run-with-idle-timer aweshell-highlight-delay t (lambda () 
+                                                         (aweshell-highlight-prompt)
                                                          (aweshell-highlight-command)
                                                          (aweshell-highlight-separator)
                                                          (aweshell-highlight-string)))))
