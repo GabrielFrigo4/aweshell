@@ -319,16 +319,17 @@ If this function affects you, disable this option."
   :group 'aweshell)
 
 (defun aweshell-update-custom-color ()
-  "Update custom colors when theme is load"
+  "Update custom colors with theme colors"
   (interactive)
   (setq-default aweshell-valid-command-color "#98C379")
   (setq-default aweshell-neutral-command-color (face-foreground 'default))
   (setq-default aweshell-invalid-command-color "#FF0000")
-  (setq-default aweshell-valid-separator-color (face-foreground 'font-lock-escape-face))
+  (setq-default aweshell-valid-separator-color (face-foreground 'font-lock-constant-face))
   (setq-default aweshell-valid-constant-color (face-foreground 'font-lock-constant-face))
   (setq-default aweshell-valid-string-color (face-foreground 'font-lock-string-face))
   (setq-default aweshell-valid-scape-color (face-foreground 'font-lock-escape-face)))
-(advice-add 'load-theme :after #'aweshell-update-custom-color)
+(advice-add 'load-theme :after (lambda ()
+                                 (run-at-time (expt 2 -2) nil #'aweshell-update-custom-color)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
