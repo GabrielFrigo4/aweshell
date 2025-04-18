@@ -827,7 +827,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Idle timer for highlight eshell command.")
 (make-variable-buffer-local 'aweshell--highlight-timer)
 
-(defvar aweshell-highlight-delay (expt 2 -4)
+(defvar aweshell-highlight-delay (expt 2 -6)
   "Idle timer delay for highlight eshell command.")
 
 (defun aweshell-start-highlight-timer ()
