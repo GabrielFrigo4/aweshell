@@ -668,23 +668,9 @@ This advice can make `other-window' skip `aweshell' dedicated window."
           (lambda ()
             (define-key eshell-mode-map (kbd aweshell-clear-buffer-key) 'aweshell-clear-buffer)
             (define-key eshell-mode-map (kbd aweshell-sudo-toggle-key) 'aweshell-sudo-toggle)
-            (define-key eshell-mode-map (kbd aweshell-search-history-key) 'aweshell-search-history)
-            ))
+            (define-key eshell-mode-map (kbd aweshell-search-history-key) 'aweshell-search-history)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EShell extensions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; eshell-up.el
-;; Quickly go to a specific parent directory in eshell
-(require 'eshell-up)
-(defalias 'eshell/up 'eshell-up)
-(defalias 'eshell/up-peek 'eshell-up-peek)
-
-;; eshell-prompt-extras
-;; Display extra information and color for your eshell prompt.
-(require 'eshell-prompt-extras)
-(with-eval-after-load "esh-opt"
-  (setq eshell-highlight-prompt nil
-        eshell-prompt-function 'epe-theme-pipeline))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Aweshell Highlight ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Validate prompt (command, separator and string) to eshell after delay.
 (defvar aweshell-validate-executable t
@@ -869,6 +855,21 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (add-hook 'eshell-mode-hook #'aweshell-start-highlight-timer)
 (add-hook 'eshell-exit-hook #'aweshell-stop-highlight-timer)
 (add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-highlight-timer)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EShell extensions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; eshell-up.el
+;; Quickly go to a specific parent directory in eshell
+(require 'eshell-up)
+(defalias 'eshell/up 'eshell-up)
+(defalias 'eshell/up-peek 'eshell-up-peek)
+
+;; eshell-prompt-extras
+;; Display extra information and color for your eshell prompt.
+(require 'eshell-prompt-extras)
+(with-eval-after-load "esh-opt"
+  (setq eshell-highlight-prompt nil
+        eshell-prompt-function 'epe-theme-pipeline))
 
 (defun aweshell-emacs (&rest args)
   "Open a file in Emacs with ARGS, Some habits die hard."
