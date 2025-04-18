@@ -759,13 +759,21 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Highlight the eshell prompt with `aweshell-neutral-command-color`."
   (when (derived-mode-p 'eshell-mode)
     (save-excursion
-      (let ((prompt-regexp eshell-prompt-regexp))
+      (let ((line (buffer-substring-no-properties
+                   (line-beginning-position)
+                   (line-end-position)))
+            (prompt-regexp eshell-prompt-regexp))
+        (when (string-match prompt-regexp line)
+          (setq line (substring line (match-end 0))))
         (goto-char (line-beginning-position))
-        (when (looking-at prompt-regexp)
-          (put-text-property (match-beginning 0) (match-end 0)
-                             'face `(:foreground ,aweshell-neutral-command-color))
-          (put-text-property (match-beginning 0) (match-end 0)
-                             'rear-nonsticky t))))))
+        (let ((pos (search-forward line (line-end-position) t)))
+          (when (and line pos)
+            (let ((beg (- pos (length line)))
+                  (end pos))
+              (put-text-property
+               beg end
+               'face `(:foreground ,aweshell-neutral-command-color))
+              (put-text-property beg end 'rear-nonsticky t))))))))
 
 (defun aweshell-highlight-command ()
   "Highlight all commands in eshell input line."
