@@ -328,7 +328,7 @@ If this function affects you, disable this option."
   (setq-default aweshell-valid-constant-color (face-foreground 'font-lock-constant-face))
   (setq-default aweshell-valid-string-color (face-foreground 'font-lock-string-face))
   (setq-default aweshell-valid-scape-color (face-foreground 'font-lock-escape-face)))
-(advice-add 'load-theme :after (lambda ()
+(advice-add 'load-theme :after (lambda (&rest _)
                                  (run-at-time (expt 2 -1) nil #'aweshell-update-custom-color)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
