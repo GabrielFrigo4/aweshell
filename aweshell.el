@@ -833,7 +833,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                   "\\(\"\\(?:\\\\.\\|[^\"\\]\\)*\"\\|'\\([^']*\\)'\\)"
                   (line-end-position) t)
             (put-text-property (match-beginning 0) (match-end 0)
-                               'face `(:foreground ,aweshell-valid-string-color))
+                               'face `(:foreground aweshell-valid-string-color))
             (put-text-property (match-beginning 0) (match-end 0)
                                'rear-nonsticky t)))))))
 
@@ -841,7 +841,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Idle timer for highlight eshell command.")
 (make-variable-buffer-local 'aweshell--highlight-timer)
 
-(defvar aweshell-highlight-delay (expt 2 -4)
+(defvar aweshell-highlight-delay (expt 2 -8)
   "Idle timer delay for highlight eshell command.")
 
 (defun aweshell-start-highlight-timer ()
