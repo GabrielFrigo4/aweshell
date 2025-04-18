@@ -268,7 +268,7 @@
   :type 'string
   :group 'aweshell)
 
-(defcustom aweshell-valid-string-color "#DB8E73"
+(defcustom aweshell-valid-string-color (face-foreground 'font-lock-string-face)
   "The color of valid string by `aweshell-validate-string'."
   :type 'string
   :group 'aweshell)
