@@ -739,7 +739,63 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                               aweshell-invalid-command-color)))
                   (put-text-property beg end 'rear-nonsticky t))))))))))
 
-(defun aweshell-validate-separator ()
+(defvar aweshell-validate-timer nil
+  "Idle timer for validating eshell command.")
+(make-variable-buffer-local 'aweshell--validate-timer)
+
+(defvar aweshell-validate-delay (expt 2 -1)
+  "Idle timer delay for validating eshell command.")
+
+(defun aweshell-start-validation-timer ()
+  "Start idle timer for command validation in eshell."
+  (setq aweshell-validate-timer
+        (run-with-idle-timer aweshell-validate-delay t (lambda () (aweshell-validate-command)))))
+
+(defun aweshell-stop-validation-timer ()
+  "Stop the idle timer used for command validation."
+  (when (timerp aweshell-validate-timer)
+    (cancel-timer aweshell-validate-timer)
+    (setq aweshell-validate-timer nil)))
+
+(defun aweshell-maybe-toggle-validation-timer ()
+  "Start or stop the Eshell validation timer based on current buffer."
+  (if (derived-mode-p 'eshell-mode)
+      (unless aweshell-validate-timer
+        (aweshell-start-validation-timer))
+    (when aweshell-validate-timer
+      (aweshell-stop-validation-timer))))
+
+(add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
+(add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
+(add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-validation-timer)
+
+(defun aweshell-highlight-command ()
+  "Highlight all commands in eshell input line."
+  (when (derived-mode-p 'eshell-mode)
+    (save-excursion
+      (let ((line (buffer-substring-no-properties
+                   (line-beginning-position)
+                   (line-end-position)))
+            (prompt-regexp eshell-prompt-regexp))
+        ;; Remove prompt to get actual command line
+        (when (string-match prompt-regexp line)
+          (setq line (substring line (match-end 0))))
+        ;; Split the line into tokens based on shell separators
+        (let ((tokens (split-string line "[|&;]+" t "[ ()\t\r\n\v\f]+")))
+          (goto-char (line-beginning-position))
+          (dolist (token tokens)
+            ;; Remove leading/trailing spaces/quotes
+            (let* ((command (car (split-string token "[ \t]+" t)))
+                   (pos (search-forward command (line-end-position) t)))
+              (when (and command pos)
+                (let ((beg (- pos (length command)))
+                      (end pos))
+                  (put-text-property
+                   beg end
+                   'face `(:foreground aweshell-possible-command-color))
+                  (put-text-property beg end 'rear-nonsticky t))))))))))
+
+(defun aweshell-highlight-separator ()
   "Highlight command separators ; | & in eshell input line, ignoring ones inside strings."
   (when (derived-mode-p 'eshell-mode)
     (save-excursion
@@ -760,7 +816,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
             (put-text-property (match-beginning 0) (match-end 0)
                                'rear-nonsticky t)))))))
 
-(defun aweshell-validate-string ()
+(defun aweshell-highlight-string ()
   "Highlight quoted strings in eshell input line, including escaped characters inside quotes."
   (when (derived-mode-p 'eshell-mode)
     (save-excursion
@@ -781,38 +837,38 @@ This advice can make `other-window' skip `aweshell' dedicated window."
             (put-text-property (match-beginning 0) (match-end 0)
                                'rear-nonsticky t)))))))
 
-(defvar aweshell-validate-timer nil
-  "Idle timer for validating eshell command.")
-(make-variable-buffer-local 'aweshell--validate-timer)
+(defvar aweshell-highlight-timer nil
+  "Idle timer for highlight eshell command.")
+(make-variable-buffer-local 'aweshell--highlight-timer)
 
-(defvar aweshell-validate-delay (expt 2 -1)
-  "Idle timer delay for validating eshell command.")
+(defvar aweshell-highlight-delay (expt 2 -1)
+  "Idle timer delay for highlight eshell command.")
 
-(defun aweshell-start-validation-timer ()
-  "Start idle timer for command validation in eshell."
-  (setq aweshell-validate-timer
-        (run-with-idle-timer aweshell-validate-delay t (lambda () 
-                                                         (aweshell-validate-command)
-                                                         (aweshell-validate-separator)
-                                                         (aweshell-validate-string)))))
+(defun aweshell-start-highlight-timer ()
+  "Start idle timer for command highlight in eshell."
+  (setq aweshell-highlight-timer
+        (run-with-idle-timer aweshell-highlight-delay t (lambda () 
+                                                         (aweshell-highlight-command)
+                                                         (aweshell-highlight-separator)
+                                                         (aweshell-highlight-string)))))
 
-(defun aweshell-stop-validation-timer ()
-  "Stop the idle timer used for command validation."
-  (when (timerp aweshell-validate-timer)
-    (cancel-timer aweshell-validate-timer)
-    (setq aweshell-validate-timer nil)))
+(defun aweshell-stop-highlight-timer ()
+  "Stop the idle timer used for command highlight."
+  (when (timerp aweshell-highlight-timer)
+    (cancel-timer aweshell-highlight-timer)
+    (setq aweshell-highlight-timer nil)))
 
-(defun aweshell-maybe-toggle-validation-timer ()
-  "Start or stop the Eshell validation timer based on current buffer."
+(defun aweshell-maybe-toggle-highlight-timer ()
+  "Start or stop the Eshell highlight timer based on current buffer."
   (if (derived-mode-p 'eshell-mode)
-      (unless aweshell-validate-timer
-        (aweshell-start-validation-timer))
-    (when aweshell-validate-timer
-      (aweshell-stop-validation-timer))))
+      (unless aweshell-highlight-timer
+        (aweshell-start-highlight-timer))
+    (when aweshell-highlight-timer
+      (aweshell-stop-highlight-timer))))
 
-(add-hook 'eshell-mode-hook #'aweshell-start-validation-timer)
-(add-hook 'eshell-exit-hook #'aweshell-stop-validation-timer)
-(add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-validation-timer)
+(add-hook 'eshell-mode-hook #'aweshell-start-highlight-timer)
+(add-hook 'eshell-exit-hook #'aweshell-stop-highlight-timer)
+(add-hook 'buffer-list-update-hook #'aweshell-maybe-toggle-highlight-timer)
 
 (defun aweshell-emacs (&rest args)
   "Open a file in Emacs with ARGS, Some habits die hard."
