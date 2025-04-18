@@ -255,6 +255,11 @@
   :type 'string
   :group 'aweshell)
 
+(defcustom aweshell-possible-command-color nil
+  "The color of possible command by `aweshell-validate-command'."
+  :type 'string
+  :group 'aweshell)
+
 (defcustom aweshell-valid-command-color nil
   "The color of valid command by `aweshell-validate-command'."
   :type 'string
@@ -318,9 +323,21 @@ If this function affects you, disable this option."
   :type 'function
   :group 'aweshell)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar aweshell-buffer-list nil
+  "The list of non-dedicated eshell buffers.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Hook ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(add-hook 'kill-buffer-hook 'aweshell-kill-buffer-hook)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Custom Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun aweshell-update-custom-color ()
   "Update custom colors with theme colors"
   (interactive)
+  (setq-default aweshell-possible-command-color (face-foreground 'warning))
   (setq-default aweshell-valid-command-color (face-foreground 'success))
   (setq-default aweshell-neutral-command-color (face-foreground 'default))
   (setq-default aweshell-invalid-command-color (face-foreground 'error))
@@ -336,15 +353,6 @@ If this function affects you, disable this option."
   (when (frame-parameter frame 'client)
     (aweshell-update-custom-color)))
 (add-hook 'after-make-frame-functions #'aweshell-update-custom-color-on-frame)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Variable ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar aweshell-buffer-list nil
-  "The list of non-dedicated eshell buffers.")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Hook ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(add-hook 'kill-buffer-hook 'aweshell-kill-buffer-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilise Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
