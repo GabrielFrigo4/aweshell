@@ -797,7 +797,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                    beg end
                    'face `(:foreground
                            ,(if (or
-                                 ;; Or command is an alias?
+                                 ;; Command is an alias?
                                  (seq-contains-p (eshell-alias-completions "") command)
                                  ;; Or command is an eshell/alias?
                                  (seq-contains-p (eshell-alias-completions "eshell/") command)
