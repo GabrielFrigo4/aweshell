@@ -700,27 +700,10 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                   (put-text-property
                    beg end
                    'face `(:foreground
-                           ,(if (or
-                                 ;; Command is an executable?
-                                 (if (equal aweshell-validate-executable t)
-                                     (executable-find command)
-                                   nil)
-                                 ;; Or command is an alias?
-                                 (seq-contains-p (eshell-alias-completions "") command)
-                                 ;; Or command is an eshell/alias?
-                                 (seq-contains-p (eshell-alias-completions "eshell/") command)
-                                 ;; Or it is ../. ?
-                                 (equal command "..")
-                                 (equal command ".")
-                                 (equal command "/")
-                                 (equal command "~")
-                                 (equal command "exit")
-                                 ;; Or it is a file in current dir?
-                                 (member (file-name-base command) (directory-files default-directory))
-                                 ;; Or it is a elisp function
-                                 (functionp (intern command))
-                                 ;; Or it is a eshell/elisp function
-                                 (functionp (intern (concat "eshell/" command))))
+                           ,(if (if (equal aweshell-validate-executable t)
+                                    ;; Is command an executable?
+                                    (executable-find command)
+                                  nil)
                                 aweshell-valid-command-color
                               aweshell-invalid-command-color)))
                   (put-text-property beg end 'rear-nonsticky t))))))))))
@@ -783,14 +766,11 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                    (line-beginning-position)
                    (line-end-position)))
             (prompt-regexp eshell-prompt-regexp))
-        ;; Remove prompt to get actual command line
         (when (string-match prompt-regexp line)
           (setq line (substring line (match-end 0))))
-        ;; Split the line into tokens based on shell separators
         (let ((tokens (split-string line "[|&;]+" t "[ ()\t\r\n\v\f]+")))
           (goto-char (line-beginning-position))
           (dolist (token tokens)
-            ;; Remove leading/trailing spaces/quotes
             (let* ((command (car (split-string token "[ \t]+" t)))
                    (pos (search-forward command (line-end-position) t)))
               (when (and command pos)
@@ -798,7 +778,26 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                       (end pos))
                   (put-text-property
                    beg end
-                   'face `(:foreground ,aweshell-possible-command-color))
+                   'face `(:foreground
+                           ,(if (or
+                                 ;; Or command is an alias?
+                                 (seq-contains-p (eshell-alias-completions "") command)
+                                 ;; Or command is an eshell/alias?
+                                 (seq-contains-p (eshell-alias-completions "eshell/") command)
+                                 ;; Or it is ../. ?
+                                 (equal command "..")
+                                 (equal command ".")
+                                 (equal command "/")
+                                 (equal command "~")
+                                 (equal command "exit")
+                                 ;; Or it is a file in current dir?
+                                 (member (file-name-base command) (directory-files default-directory))
+                                 ;; Or it is a elisp function
+                                 (functionp (intern command))
+                                 ;; Or it is a eshell/elisp function
+                                 (functionp (intern (concat "eshell/" command))))
+                                aweshell-valid-command-color
+                              aweshell-possible-command-color)))
                   (put-text-property beg end 'rear-nonsticky t))))))))))
 
 (defun aweshell-highlight-separator ()
@@ -814,7 +813,6 @@ This advice can make `other-window' skip `aweshell' dedicated window."
         (goto-char (line-beginning-position))
         (let ((case-fold-search nil))
           (while (re-search-forward
-                  ;; Match only quoted strings (handling escaped characters inside)
                   "\\([;|&]+\\)"
                   (line-end-position) t)
             (put-text-property (match-beginning 0) (match-end 0)
@@ -835,7 +833,6 @@ This advice can make `other-window' skip `aweshell' dedicated window."
         (goto-char (line-beginning-position))
         (let ((case-fold-search nil))
           (while (re-search-forward
-                  ;; Match only quoted strings (handling escaped characters inside)
                   "\\(\"\\(?:\\\\.\\|[^\"\\]\\)*\"\\|'\\([^']*\\)'\\)"
                   (line-end-position) t)
             (put-text-property (match-beginning 0) (match-end 0)
@@ -854,10 +851,10 @@ This advice can make `other-window' skip `aweshell' dedicated window."
   "Start idle timer for command highlight in eshell."
   (setq aweshell-highlight-timer
         (run-with-idle-timer aweshell-highlight-delay t (lambda () 
-                                                         (aweshell-highlight-prompt)
-                                                         (aweshell-highlight-command)
-                                                         (aweshell-highlight-separator)
-                                                         (aweshell-highlight-string)))))
+                                                          (aweshell-highlight-prompt)
+                                                          (aweshell-highlight-command)
+                                                          (aweshell-highlight-separator)
+                                                          (aweshell-highlight-string)))))
 
 (defun aweshell-stop-highlight-timer ()
   "Stop the idle timer used for command highlight."
