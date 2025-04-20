@@ -700,10 +700,27 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                   (put-text-property
                    beg end
                    'face `(:foreground
-                           ,(if (if (equal aweshell-validate-executable t)
-                                    ;; Is command an executable?
-                                    (executable-find command)
-                                  nil)
+                           ,(if (or
+                                 ;; Command is an executable?
+                                 (if (equal aweshell-validate-executable t)
+                                     (executable-find command)
+                                   nil)
+                                 ;; Or command is an alias?
+                                 (seq-contains-p (eshell-alias-completions "") command)
+                                 ;; Or command is an eshell/alias?
+                                 (seq-contains-p (eshell-alias-completions "eshell/") command)
+                                 ;; Or it is ../. ?
+                                 (equal command "..")
+                                 (equal command ".")
+                                 (equal command "/")
+                                 (equal command "~")
+                                 (equal command "exit")
+                                 ;; Or it is a file in current dir?
+                                 (member (file-name-base command) (directory-files default-directory))
+                                 ;; Or it is a elisp function
+                                 (functionp (intern command))
+                                 ;; Or it is a eshell/elisp function
+                                 (functionp (intern (concat "eshell/" command))))
                                 aweshell-valid-command-color
                               aweshell-invalid-command-color)))
                   (put-text-property beg end 'rear-nonsticky t))))))))))
