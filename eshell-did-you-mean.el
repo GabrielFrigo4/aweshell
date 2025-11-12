@@ -6,7 +6,7 @@
 ;; URL: https://github.com/xuchunyang/eshell-did-you-mean
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 ;; Keywords: eshell
-;; Version: 0.1
+;; Version: 0.2
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -76,15 +76,12 @@ If THRESHOLD is non-nil, use is as the maximum edit distance."
 (defun eshell-did-you-mean--get-all-commands ()
   "Feed `eshell-did-you-mean--all-commands'."
   (unless eshell-did-you-mean--all-commands
-    (setq eshell-did-you-mean--all-commands
-          (ignore-errors
-            (pcomplete-completions)))))
+    (setq eshell-did-you-mean--all-commands (pcomplete-completions))))
 
 (defun eshell-did-you-mean-output-filter (output)
   "\"Did you mean\" filter for eshell OUTPUT.
 Should be added to `eshell-preoutput-filter-functions'."
   (if (and eshell-last-command-name
-           (not (eshell-exit-success-p))
            (string-prefix-p (format "%s: command not found"
                                     eshell-last-command-name)
                             output))
@@ -99,8 +96,8 @@ Should be added to `eshell-preoutput-filter-functions'."
              (if (= (length guesses) 1)
                  "Did you mean this?"
                "Did you mean one of these?") "\n"
-             (mapconcat (lambda (elt) (format "\t%s" (car elt)))
-                        guesses "\n"))
+               (mapconcat (lambda (elt) (format "\t%s" (car elt)))
+                          guesses "\n"))
           output))
     output))
 

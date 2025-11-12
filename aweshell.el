@@ -3,19 +3,19 @@
 ;; Filename: aweshell.el
 ;; Description: Awesome Eshell
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
-;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
+;; Maintainer: Gabriel Frigo <gabriel.frigo4@gmail.com>
 ;; Copyright (C) 2018, Andy Stewart, all rights reserved.
 ;; Created: 2018-08-13 23:18:35
-;; Version: 4.5
-;; Last-Updated: 2020-03-28 10:03:43
-;;           By: Andy Stewart
-;; URL: http://www.emacswiki.org/emacs/download/aweshell.el
+;; Version: 4.6
+;; Last-Updated: 2025-11-12 9:23:43
+;;           By: Gabriel Frigo
+;; URL: https://github.com/GabrielFrigo4/aweshell/blob/master/aweshell.el
 ;; Keywords:
 ;; Compatibility: GNU Emacs 27.0.50
 ;;
 ;; Features that might be required by this library:
 ;;
-;; `eshell' `eshell-prompt-extras' `exec-path-from-shell' `cl-lib' `subr-x'
+;; `eshell' `eshell-did-you-mean' `eshell-prompt-extras' `eshell-up.el' `exec-path-from-shell' `cl-lib' `subr-x'
 ;;
 
 ;;; This file is NOT part of GNU Emacs
@@ -63,7 +63,7 @@
 
 ;;; Installation:
 ;;
-;; Put `aweshell.el', `eshell-prompt-extras.el', `exec-path-from-shell.el' to your load-path.
+;; Put `aweshell.el', `eshell-did-you-mean.el', `eshell-prompt-extras.el', `eshell-up.el.el', `exec-path-from-shell.el' to your load-path.
 ;; The load-path is usually ~/elisp/.
 ;; It's set in your ~/.emacs like this:
 ;; (add-to-list 'load-path (expand-file-name "~/elisp"))
@@ -104,6 +104,9 @@
 
 ;;; Change log:
 ;;;
+;; 2025/11/12
+;;      * Fix: aweshell-validate-command displays incorrect color for command when aweshell-validate-executable is nil
+;;
 ;; 2022/06/16
 ;;      * Fix: aweshell-switch-buffer failed when there are killed buffers in `aweshell-buffer-list`
 ;;
@@ -702,9 +705,7 @@ This advice can make `other-window' skip `aweshell' dedicated window."
                    'face `(:foreground
                            ,(if (or
                                  ;; Command is an executable?
-                                 (if (equal aweshell-validate-executable t)
-                                     (executable-find command)
-                                   nil)
+                                 (executable-find command)
                                  ;; Or command is an alias?
                                  (seq-contains-p (eshell-alias-completions "") command)
                                  ;; Or command is an eshell/alias?
@@ -735,7 +736,10 @@ This advice can make `other-window' skip `aweshell' dedicated window."
 (defun aweshell-start-validation-timer ()
   "Start idle timer for command validation in eshell."
   (setq aweshell-validate-timer
-        (run-with-idle-timer aweshell-validate-delay t (lambda () (aweshell-validate-command)))))
+        (run-with-idle-timer aweshell-validate-delay t
+                             (lambda ()
+                               (when aweshell-validate-executable
+                                 (aweshell-validate-command))))))
 
 (defun aweshell-stop-validation-timer ()
   "Stop the idle timer used for command validation."

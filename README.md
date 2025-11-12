@@ -1,11 +1,13 @@
-<img src="./aweshell.gif">
+<img src="./aweshell.png">
 
 # What is Aweshell?
- I created `multi-term.el` and use it many years.
+ Awesome Eshell (Aweshell) is an Emacs Lisp (elisp) package designed to significantly enhance the Eshell experience. It modernizes the interface by adding visual features, such as Zsh-style colored prompts and syntax highlighting for file viewing.
 
- Now I'm a big fans of `eshell`.
+ Productivity is boosted through intelligent features, including Fish-like history autosuggestions, command validation, typo correction ("did you mean..."), and advanced auto-completion for arguments and Git, providing an IDE-like feel.
 
- So I wrote `aweshell.el` to extend `eshell` with these features:
+ Furthermore, the package improves session management with multiple buffers and a dedicated terminal window, while also adding useful commands (like toggle-sudo), background process alerts, and fixing the "command not found" error on macOS.
+
+ So `aweshell.el` extend `eshell` with these features:
 
  1. Create and manage multiple eshell buffers.
  2. Add some useful commands, such as: clear buffer, toggle sudo etc.
@@ -98,7 +100,7 @@
 ## Dedicated window
  You can use command ```aweshell-dedicated-toggle``` to pop dedicated window at bottom of frame.
 
- <img src="./aweshell-dedicated.gif">
+ <img src="./aweshell-dedicated.png">
 
 # FAQ
  If you got error that random space insert, you perhaps need turn off ```aweshell-auto-suggestion-p``` with ```(setq aweshell-auto-suggestion-p nil)```, meantime auto suggestion feature will turn off.
