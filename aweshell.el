@@ -986,7 +986,7 @@ Available themes:
 Updates alias definitions in memory and writes to disk only when changed,
 suppressing minibuffer write messages."
   (require 'em-alias)
-  (let ((aliases '(("clear" "clear-scrollback")
+  (let ((aliases `(("clear" "clear-scrollback")
                    ("ll" "ls -la $*")
                    ("la" "ls -a $*")
                    ("l"  "ls -l $*")
@@ -1001,7 +1001,18 @@ suppressing minibuffer write messages."
                    ("cp" "cp -i $*")
                    ("mv" "mv -i $*")
                    ("e" "find-file $1")
-                   ("ee" "find-file-other-window $1")))
+                   ("ee" "find-file-other-window $1")
+                   ("gcc" "gcc -fdiagnostics-color=always $*")
+                   ("g++" "g++ -fdiagnostics-color=always $*")
+                   ("clang" ,(if (eq system-type 'windows-nt)
+                                 "clang -fcolor-diagnostics -fansi-escape-codes $*"
+                               "clang -fcolor-diagnostics $*"))
+                   ("clang++" ,(if (eq system-type 'windows-nt)
+                                   "clang++ -fcolor-diagnostics -fansi-escape-codes $*"
+                                 "clang++ -fcolor-diagnostics $*"))
+                   ("cc" "cc -fdiagnostics-color=always $*")
+                   ("CC" "CC -fdiagnostics-color=always $*")
+                   ("c++" "c++ -fdiagnostics-color=always $*")))
         (changed nil))
     (dolist (alias-def aliases)
       (let* ((alias (car alias-def))
@@ -1018,6 +1029,14 @@ suppressing minibuffer write messages."
         (eshell-write-aliases-list)))))
 
 (add-hook 'eshell-mode-hook #'aweshell/setup-aliases)
+
+(defun aweshell/setup-environment ()
+  "Setup environment variables for Aweshell."
+  (setenv "TERM" "xterm-256color")
+  (setenv "FORCE_COLOR" "1")
+  (setenv "CLICOLOR_FORCE" "1"))
+
+(add-hook 'eshell-mode-hook #'aweshell/setup-environment)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Buffer Local Region Face ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
