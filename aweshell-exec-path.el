@@ -11,7 +11,6 @@
 ;; Package-Requires: ((emacs "24.4"))
 
 
-
 ;; This file is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -327,7 +326,6 @@ The values of all the environment variables named in
 values used in the user's shell."
   (interactive)
   (aweshell/exec-path-copy-envs aweshell/exec-path-variables))
-
 
 (provide 'aweshell-exec-path)
 

@@ -457,7 +457,6 @@ Retorna (branch . dirty-p) ou nil se fora de um repositório."
   "Return o nome do branch atual (ou SHA curto em detached HEAD)."
   (car (aweshell/theme--git-info)))
 
-
 (defun aweshell/theme-git-short-sha1 ()
   "Return the short sha1 of your git commit."
   (aweshell/theme-trim-newline (shell-command-to-string "git rev-parse --short HEAD")))
