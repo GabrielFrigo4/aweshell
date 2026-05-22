@@ -289,8 +289,6 @@ variables `exec-path' and `eshell-path-env'."
   (setenv name value)
   (when (string-equal "PATH" name)
     (setq exec-path (append (parse-colon-path value) (list exec-directory)))
-    ;; `eshell-path-env' is a buffer local variable, so change its default
-    ;; value.
     (setq-default eshell-path-env value)))
 
 ;;;###autoload
@@ -327,10 +325,3 @@ values used in the user's shell."
   (aweshell/exec-path-copy-envs aweshell/exec-path-variables))
 
 (provide 'aweshell-exec-path)
-
-;; Local Variables:
-;; coding: utf-8
-;; indent-tabs-mode: nil
-;; require-final-newline: t
-;; checkdoc-minor-mode: t
-;; End:
