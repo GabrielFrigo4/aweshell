@@ -3,7 +3,7 @@
 > Extensão avançada, modular e ergonômica para o GNU Emacs Eshell, integrando realce de sintaxe em tempo real, auto-sugestões estilo Fish, temas modernos de prompt e janelas dedicadas estilo IDE.
 
 [![Environment](https://img.shields.io/badge/🏛️_Environment-Hub-blue)](https://github.com/GabrielFrigo4/environment)
-[![GNU Emacs](https://img.shields.io/badge/GNU_Emacs-27.1%2B-purple?logo=gnuemacs&logoColor=white)](https://www.gnu.org/software/emacs/)
+[![GNU Emacs](https://img.shields.io/badge/GNU_Emacs-30%2B-purple?logo=gnuemacs&logoColor=white)](https://www.gnu.org/software/emacs/)
 [![Linux](https://img.shields.io/badge/Linux-Supported-blue?logo=linux&logoColor=white)](https://kernel.org/)
 [![FreeBSD](https://img.shields.io/badge/FreeBSD-Supported-red?logo=freebsd&logoColor=white)](https://freebsd.org/)
 [![macOS](https://img.shields.io/badge/macOS-Supported-black?logo=apple&logoColor=white)](https://apple.com/)
@@ -143,10 +143,35 @@ No seu `init.el`:
   :ensure nil
   :commands (aweshell/new aweshell/toggle aweshell/dedicated-toggle aweshell/switch-buffer)
   :init
+  (defalias 'esh 'aweshell/new)
+  (defalias 'eshell 'aweshell/new)
   (setq-default aweshell/validate-executable nil)
   (setq-default aweshell/auto-suggestion-p t)
+  (setq-default aweshell/banner-message "Welcome to the Awesome Emacs Shell\n")
   :config
   (setq aweshell/theme 'aweshell/theme-theme-zshrc))
+```
+
+---
+
+## 🛠️ Automação & Quality Gates
+
+O repositório possui uma interface de compilação e teste estrita compatível com GNU e BSD Make:
+
+```sh
+# Validar sintaxe e integridade em modo batch do Emacs
+make test
+# ou via script unificado:
+./aweshell.sh test
+
+# Compilar bytecode (.elc)
+make compile
+
+# Limpar artefatos gerados
+make clean
+
+# Diagnóstico de ambiente e utilitários
+./aweshell.sh doctor
 ```
 
 ---

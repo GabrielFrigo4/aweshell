@@ -1,3 +1,5 @@
+;;; aweshell-theme.el --- Theme engine for aweshell -*- lexical-binding: t; -*-
+
 ;; ============================================================================
 ;;  AWESHELL-THEME.EL
 ;; ============================================================================
@@ -159,7 +161,7 @@
   :type 'string)
 
 (defcustom aweshell/theme-show-local-working-directory nil
-  "Whether aweshell/theme-pipeline should show the local path of the working directory."
+  "Whether pipeline theme should show local path of working dir."
   :group 'epe
   :type 'boolean)
 
@@ -350,7 +352,7 @@ time the command took to complete in seconds."
           duration))
 
 (defcustom aweshell/theme-status-min-duration 1
-  "If a command takes more time than this, display its status with `aweshell/theme-status'."
+  "Display status when a command duration in seconds exceeds this."
   :group 'epe
   :type 'number)
 
@@ -438,7 +440,7 @@ Retorna (branch . dirty-p) ou nil se fora de um repositório."
             (cons branch dirty)))))))
 
 (defun aweshell/theme--git-info ()
-  "Retorna (branch . dirty-p) com cache por buffer (TTL: `aweshell/theme-git-cache-ttl')."
+  "Return (branch . dirty-p) with per-buffer cache."
   (if (aweshell/theme--git-cache-valid-p)
       (cdr aweshell/theme--git-cache)
     (let ((result (aweshell/theme--git-info-fetch)))
@@ -446,12 +448,18 @@ Retorna (branch . dirty-p) ou nil se fora de um repositório."
       result)))
 
 (defun aweshell/theme-git-p ()
-  "Return non-nil se está em um repositório git."
+  "Return non-nil if in a git repository."
   (not (null (car (aweshell/theme--git-info)))))
 
 (defun aweshell/theme-git-branch ()
-  "Return o nome do branch atual (ou SHA curto em detached HEAD)."
+  "Return current git branch (or short SHA if detached HEAD)."
   (car (aweshell/theme--git-info)))
+
+(defun aweshell/theme-git-tag ()
+  "Return current exact git tag name, or nil."
+  (let ((tag (aweshell/theme-trim-newline
+              (shell-command-to-string "git describe --tags --exact-match 2> /dev/null"))))
+    (unless (string-empty-p tag) tag)))
 
 (defun aweshell/theme-git-short-sha1 ()
   "Return the short sha1 of your git commit."

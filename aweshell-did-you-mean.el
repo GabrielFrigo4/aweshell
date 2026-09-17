@@ -1,3 +1,5 @@
+;;; aweshell-did-you-mean.el --- "Did you mean" helper for Eshell -*- lexical-binding: t; -*-
+
 ;; ============================================================================
 ;;  AWESHELL/DID-YOU-MEAN.EL
 ;; ============================================================================
@@ -37,6 +39,10 @@
 (require 'cl-lib)
 (require 'eshell)
 (require 'pcomplete)
+
+(defvar eshell-preoutput-filter-functions)
+(defvar eshell-last-command-name)
+(defvar eshell-first-time-mode-hook)
 
 (defun aweshell/did-you-mean--edit-distance (s1 s2)
   "Return the edit (levenshtein) distance between strings S1 S2.

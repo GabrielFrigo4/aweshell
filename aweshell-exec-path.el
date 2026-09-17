@@ -1,3 +1,5 @@
+;;; aweshell-exec-path.el --- Set Emacs exec-path and PATH from shell -*- lexical-binding: t; -*-
+
 ;; ============================================================================
 ;;  AWESHELL-EXEC-PATH.EL
 ;; ============================================================================
@@ -154,8 +156,8 @@ The default value denotes an interactive login shell."
 (defmacro aweshell/exec-path--warn-duration (&rest body)
   "Evaluate BODY and warn if execution duration exceeds a time limit.
 The limit is given by `aweshell/exec-path-warn-duration-millis'."
-  (let ((start-time (cl-gensym))
-        (duration-millis (cl-gensym)))
+  (let ((start-time (gensym))
+        (duration-millis (gensym)))
     `(let ((,start-time (current-time)))
        (prog1
            (progn ,@body)

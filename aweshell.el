@@ -1,3 +1,5 @@
+;;; aweshell.el --- Awesome Emacs Shell -*- lexical-binding: t; -*-
+
 ;; ============================================================================
 ;;  AWESHELL.EL
 ;; ============================================================================
@@ -8,16 +10,16 @@
 ;; Maintainer: Gabriel Frigo <gabriel.frigo4@gmail.com>
 ;; Copyright (C) 2018, Andy Stewart, all rights reserved.
 ;; Created: 2018-08-13 23:18:35
-;; Version: 4.6
-;; Last-Updated: 2025-11-12 9:23:43
+;; Version: 5.0
+;; Last-Updated: 2026-09-17 02:23:00
 ;;           By: Gabriel Frigo
-;; URL: https://github.com/GabrielFrigo4/aweshell/blob/master/aweshell.el
-;; Keywords:
-;; Compatibility: GNU Emacs 27.0.50
-;;
+;; URL: https://github.com/GabrielFrigo4/aweshell
+;; Keywords: eshell, terminal, shell
+;; Compatibility: GNU Emacs 27.1+ / 30+
+
 ;; Features that might be required by this library:
-;;
-;; `eshell' `aweshell/did-you-mean' `aweshell-theme' `aweshell/up.el' `aweshell/exec-path' `cl-lib' `subr-x'
+;; `eshell' `aweshell-theme' `aweshell-history' `aweshell-did-you-mean'
+;; `aweshell-up' `aweshell-exec-path' `cl-lib' `subr-x'
 ;;
 
 ;; ============================================================================
@@ -227,7 +229,7 @@
 ;;
 
 ;; ============================================================================
-;;  REQUIRE
+;;  REQUIRE & FORWARD DECLARATIONS
 ;; ============================================================================
 
 (require 'eshell)
@@ -240,6 +242,32 @@
 (require 'aweshell-did-you-mean)
 (require 'aweshell-up)
 (require 'aweshell-exec-path)
+
+(defvar eshell-prompt-regexp)
+(defvar eshell-prompt-function)
+(defvar eshell-command-aliases-list)
+(defvar eshell-last-command-name)
+(defvar eshell-foreground-command)
+(defvar eshell-current-command)
+(defvar eshell-banner-message)
+
+(declare-function eshell/clear-scrollback "em-basic" ())
+(declare-function eshell/cd "em-dirs" (&rest args))
+(declare-function eshell-get-history "em-hist" (n))
+(declare-function eshell-write-aliases-list "em-alias" ())
+(declare-function eshell-alias-completions "em-alias" (name))
+(declare-function company-begin-backend "company" (backend))
+(declare-function pcmpl-git-commands "pcmpl-git" ())
+(declare-function pcmpl-git-remotes "pcmpl-git" ())
+(declare-function pcmpl-git-get-refs "pcmpl-git" (&optional type))
+(declare-function aweshell/autosuggest--prefix "aweshell" ())
+(declare-function aweshell/autosuggest-candidates "aweshell" (prefix))
+
+(defsubst aweshell--bol ()
+  "Move to beginning of line safely across GNU Emacs versions."
+  (if (fboundp 'eshell-bol)
+      (with-no-warnings (eshell-bol))
+    (beginning-of-line)))
 
 ;; ============================================================================
 ;;  OS CONFIG
@@ -258,6 +286,14 @@
 
 (defgroup aweshell nil
   "Multi eshell manager."
+  :group 'aweshell)
+
+(defcustom aweshell/banner-message "Welcome to the Awesome Emacs Shell\n"
+  "Banner message displayed when opening an Aweshell buffer.
+Defaults to single newline to keep clean spacing before the prompt."
+  :type '(choice (string :tag "String")
+                 (function :tag "Function")
+                 (const :tag "None" nil))
   :group 'aweshell)
 
 (defcustom aweshell/complete-selection-key "M-h"
@@ -410,24 +446,20 @@ If this function affects you, disable this option."
             (delq killed-buffer aweshell/buffer-list)))))
 
 (defun aweshell/get-buffer-index ()
-  (let ((eshell-buffer-index-list (aweshell/get-buffer-index-list))
-        (eshell-buffer-index-counter 1))
-    (if eshell-buffer-index-list
-        (progn
-          (dolist (buffer-index eshell-buffer-index-list)
-            (if (equal buffer-index eshell-buffer-index-counter)
-                (setq eshell-buffer-index-counter (+ 1 eshell-buffer-index-counter))
-              (return eshell-buffer-index-counter)))
-          eshell-buffer-index-counter)
-      1)))
+  "Get next available buffer index for a new aweshell buffer."
+  (let ((indices (aweshell/get-buffer-index-list))
+        (counter 1))
+    (while (member counter indices)
+      (setq counter (1+ counter)))
+    counter))
 
 (defun aweshell/get-buffer-names ()
   (let (eshell-buffer-names)
     (dolist (frame (frame-list))
       (dolist (buffer (buffer-list frame))
         (with-current-buffer buffer
-          (if (eq major-mode 'eshell-mode)
-              (add-to-list 'eshell-buffer-names (buffer-name buffer))))))
+          (when (eq major-mode 'eshell-mode)
+            (cl-pushnew (buffer-name buffer) eshell-buffer-names :test #'equal)))))
     eshell-buffer-names))
 
 (defun aweshell/get-buffer-index-list ()
@@ -436,8 +468,8 @@ If this function affects you, disable this option."
         (let* ((eshell-buffer-index-strings
                 (seq-filter (function
                              (lambda (buffer-index)
-                               (and (stringp buffer-index)
-                                    (not (equal 0 (string-to-number buffer-index))))))
+                                (and (stringp buffer-index)
+                                     (not (equal 0 (string-to-number buffer-index))))))
                             (mapcar (function
                                      (lambda (buffer-name)
                                        (if (integerp (string-match "\\*eshell\\*\\<\\([0-9]+\\)\\>" buffer-name))
@@ -453,8 +485,8 @@ If this function affects you, disable this option."
 ;; ============================================================================
 
 (defun aweshell/toggle (&optional arg)
-  "Toggle Aweshell.
-If called with prefix argument, open Aweshell buffer in current directory when toggling on Aweshell. If there exists an Aweshell buffer with current directory, use that, otherwise create one."
+  "Toggle Aweshell buffer.
+If ARG is prefix, open in current dir. Reuse existing buffer or create new."
   (interactive "p")
   (if (equal major-mode 'eshell-mode)
       (while (equal major-mode 'eshell-mode)
@@ -475,9 +507,18 @@ If called with prefix argument, open Aweshell buffer in current directory when t
       (aweshell/next))))
 
 (defun aweshell/new ()
-  "Create new eshell buffer."
+  "Create new eshell buffer with customized banner."
   (interactive)
-  (setq aweshell/buffer-list (nconc aweshell/buffer-list (list (eshell (aweshell/get-buffer-index))))))
+  (let* ((idx (aweshell/get-buffer-index))
+         (banner (or (bound-and-true-p aweshell/banner-message)
+                     (and (boundp 'eshell-banner-message) eshell-banner-message)))
+         (buf (let ((eshell-banner-message banner))
+                (eshell idx))))
+    (with-current-buffer buf
+      (when (boundp 'aweshell/banner-message)
+        (setq-local eshell-banner-message aweshell/banner-message)))
+    (setq aweshell/buffer-list (nconc aweshell/buffer-list (list buf)))
+    buf))
 
 (defun aweshell/next ()
   "Select next eshell buffer.
@@ -491,8 +532,7 @@ Create new one if no eshell buffer exists."
                                  0
                                (+ 1 current-buffer-index))
                            0)))
-      (switch-to-buffer (nth switch-index aweshell/buffer-list))
-      )))
+      (switch-to-buffer (nth switch-index aweshell/buffer-list)))))
 
 (defun aweshell/prev ()
   "Select previous eshell buffer.
@@ -506,8 +546,7 @@ Create new one if no eshell buffer exists."
                                  (- (length aweshell/buffer-list) 1)
                                (- current-buffer-index 1))
                            (- (length aweshell/buffer-list) 1))))
-      (switch-to-buffer (nth switch-index aweshell/buffer-list))
-      )))
+      (switch-to-buffer (nth switch-index aweshell/buffer-list)))))
 
 (defun aweshell/clear-buffer ()
   "Clear eshell buffer."
@@ -520,28 +559,25 @@ Create new one if no eshell buffer exists."
   (interactive)
   (save-excursion
     (let ((commands (buffer-substring-no-properties
-                     (progn (eshell-bol) (point)) (point-max))))
+                     (progn (aweshell--bol) (point)) (point-max))))
       (if (string-match-p "^sudo " commands)
           (progn
-            (eshell-bol)
+            (aweshell--bol)
             (while (re-search-forward "sudo " nil t)
               (replace-match "" t nil)))
         (progn
-          (eshell-bol)
-          (insert "sudo ")
-          )))))
+          (aweshell--bol)
+          (insert "sudo "))))))
 
 (defun aweshell/search-history ()
   "Interactive search eshell history."
   (interactive)
   (save-excursion
-    (let* ((start-pos (eshell-beginning-of-input))
-           (input (eshell-get-old-input))
-           (all-shell-history (aweshell/parse-shell-history)))
-      (let* ((command (funcall aweshell/search-history-completing-read-fn "Search history: " all-shell-history)))
+    (let ((all-shell-history (aweshell/parse-shell-history)))
+      (let ((command (funcall aweshell/search-history-completing-read-fn
+                              "Search history: " all-shell-history)))
         (eshell-kill-input)
-        (insert command)
-        )))
+        (insert command))))
   (end-of-line))
 
 (defun aweshell/switch-buffer ()
@@ -574,7 +610,10 @@ Create new one if no eshell buffer exists."
           (mapcar (lambda (buffer) `(,(buffer-name buffer) . ,buffer)) aweshell/buffer-list))
          (candidate-buffer (alist-get candidate buffer-alist nil nil #'equal)))
     (with-current-buffer candidate-buffer
-      (format "  <%s> %s" (eshell-get-history 0) (if eshell-current-command "(Running)" "")))))
+      (let ((hist (if (fboundp 'eshell-get-history) (eshell-get-history 0) ""))
+            (running (or (bound-and-true-p eshell-foreground-command)
+                         (bound-and-true-p eshell-current-command))))
+        (format "  <%s> %s" (or hist "") (if running "(Running)" ""))))))
 
 ;; ============================================================================
 ;;  AWESHELL DEDICATED WINDOW
@@ -657,7 +696,7 @@ Otherwise return nil."
 (defun aweshell/dedicated-split-window ()
   "Split dedicated window at bottom of frame."
   (ignore-errors
-    (dotimes (i 50)
+    (dotimes (_ 50)
       (windmove-down)))
   (split-window (selected-window) (- (aweshell/current-window-take-height) aweshell/dedicated-window-height))
   (other-window 1)
@@ -670,7 +709,7 @@ Otherwise return nil."
   (setq aweshell/dedicated-buffer (current-buffer)))
 
 (defun aweshell/delete-other-window-advice (orig-fun &rest args)
-  "Advice to make aweshell avoid dedicated window deleted by `delete-other-windows'."
+  "Advice to prevent dedicated window deletion by `delete-other-windows'."
   (unless (eq (selected-window) aweshell/dedicated-window)
     (let ((aweshell/dedicated-active-p (aweshell/window-exist-p aweshell/dedicated-window)))
       (if aweshell/dedicated-active-p
@@ -856,7 +895,7 @@ Otherwise return nil."
                     (put-text-property beg end 'rear-nonsticky t)))))))))))
 
 (defun aweshell/highlight-separator ()
-  "Highlight command separators ; | & in eshell input line, ignoring ones inside strings."
+  "Highlight command separators ; | & in eshell input line."
   (when (aweshell/on-input-line-p)
     (let ((inhibit-read-only t))
       (save-excursion
@@ -877,7 +916,7 @@ Otherwise return nil."
                                  'rear-nonsticky t))))))))
 
 (defun aweshell/highlight-string ()
-  "Highlight quoted strings in eshell input line, including escaped characters inside quotes."
+  "Highlight quoted strings in eshell input line."
   (when (aweshell/on-input-line-p)
     (let ((inhibit-read-only t))
       (save-excursion
@@ -964,10 +1003,10 @@ Otherwise return nil."
   "The eshell prompt theme to use.
 Available themes:
   `aweshell/theme-theme-lambda'     - Minimal lambda theme
-  `aweshell/theme-theme-dakrone'    - Lambda with directory shrinking
+  `aweshell/theme-theme-dakrone'    - Directory shrinking
   `aweshell/theme-theme-pipeline'   - Oh-my-zsh style
-  `aweshell/theme-theme-zshrc'      - Replicates a zsh configuration style (default)
-  `aweshell/theme-theme-multiline-with-status' - Multiline with status info"
+  `aweshell/theme-theme-zshrc'      - Zshrc replica (default)
+  `aweshell/theme-theme-multiline-with-status' - Multiline status"
   :type 'function
   :group 'aweshell)
 
@@ -996,7 +1035,7 @@ Available themes:
   (setq-default eshell-prompt-function aweshell/theme))
 
 (defun aweshell/lock-output-filter ()
-  "Applies read-only protection to Eshell output if `aweshell-lock-output' is non-nil."
+  "Apply read-only protection to output if `aweshell/lock-output' is non-nil."
   (when aweshell/lock-output
     (let ((inhibit-read-only t)
           (start eshell-last-output-start)
@@ -1079,7 +1118,7 @@ suppressing minibuffer write messages."
 ;; ============================================================================
 
 (defun aweshell/setup-region-face ()
-  "Locally remap region face in eshell to preserve text foreground colors when selected."
+  "Locally remap region face in eshell."
   (let ((bg (face-background 'region nil t)))
     (when (or (null bg)
               (string= bg "unspecified-bg")
@@ -1093,7 +1132,10 @@ suppressing minibuffer write messages."
   "Open a file in Emacs with ARGS, Some habits die hard."
   (if (null args)
       (bury-buffer)
-    (mapc #'find-file (mapcar #'expand-file-name (eshell-flatten-list (reverse args))))))
+    (let ((file-list (if (fboundp 'flatten-tree)
+                         (flatten-tree (reverse args))
+                       (with-no-warnings (eshell-flatten-list (reverse args))))))
+      (mapc #'find-file (mapcar #'expand-file-name file-list)))))
 
 (defalias 'eshell/e 'aweshell/emacs)
 
@@ -1113,10 +1155,9 @@ suppressing minibuffer write messages."
                             (".*\.zip" "unzip")
                             (".*\.Z" "uncompress")
                             (".*" "echo 'Could not unpack the file:'")))))
-    (let ((unpack-command(concat command " " file " " (mapconcat 'identity args " "))))
-      (eshell/printnl "Unpack command: " unpack-command)
-      (eshell-command-result unpack-command))
-    ))
+    (let ((unpack-command (concat command " " file " " (mapconcat 'identity args " "))))
+      (message "Unpack command: %s" unpack-command)
+      (eshell-command-result unpack-command))))
 
 (defalias 'eshell/unpack 'aweshell/unpack)
 
@@ -1137,8 +1178,8 @@ suppressing minibuffer write messages."
   (defun pcmpl-git-commands ()
     "Return the most common git commands by parsing the git output."
     (with-temp-buffer
-      (call-process-shell-command "git" nil (current-buffer) nil "help" "--all")
-      (goto-char 0)
+      (call-process "git" nil (current-buffer) nil "help" "--all")
+      (goto-char (point-min))
       (search-forward "\n\n")
       (let (commands)
         (while (re-search-forward
@@ -1226,50 +1267,8 @@ suppressing minibuffer write messages."
 (add-hook 'eshell-kill-hook #'eshell-command-alert)
 
 (when aweshell/auto-suggestion-p
-  (defun aweshell/reload-shell-history ()
-    (with-temp-message ""
-      (cond ((string-equal shell-file-name "/bin/bash")
-             (shell-command "history -r"))
-            ((string-equal shell-file-name "/bin/zsh")
-             (shell-command "fc -W; fc -R")))))
-
-  (defun aweshell/parse-bash-history ()
-    "Parse the bash history."
-    (if (file-exists-p "~/.bash_history")
-        (let (collection bash_history)
-          (aweshell/reload-shell-history)
-          (setq collection
-                (nreverse
-                 (split-string (with-temp-buffer (insert-file-contents (file-truename "~/.bash_history"))
-                                                 (buffer-string))
-                               "\n"
-                               t)))
-          (when (and collection (> (length collection) 0)
-                     (setq bash_history collection))
-            bash_history))
-      nil))
-
-  (defun aweshell/parse-zsh-history ()
-    "Parse the bash history."
-    (if (file-exists-p "~/.zsh_history")
-        (let (collection zsh_history)
-          (aweshell/reload-shell-history)
-          (setq collection
-                (nreverse
-                 (split-string (with-temp-buffer (insert-file-contents (file-truename "~/.zsh_history"))
-                                                 (replace-regexp-in-string "^:[^;]*;" "" (buffer-string)))
-                               "\n"
-                               t)))
-          (when (and collection (> (length collection) 0)
-                     (setq zsh_history collection))
-            zsh_history))
-      nil))
-
   (defun aweshell/autosuggest--prefix ()
-    "Get current eshell input.
-
-If this function return non-nil prefix, aweshell will popup completion menu in aweshell buffer.
-This function only return prefix when current point at eshell prompt line, avoid insert unnecessary indent char, such as ghci prompt. (See issue #49)."
+    "Get current eshell input prefix for autosuggestion menu."
     (when (and (aweshell/on-input-line-p)
                (save-excursion
                  (beginning-of-line)
@@ -1277,12 +1276,12 @@ This function only return prefix when current point at eshell prompt line, avoid
       (string-trim-left
        (buffer-substring-no-properties
         (save-excursion
-          (eshell-bol)
+          (aweshell--bol)
           (point))
         (line-end-position)))))
 
   (defun aweshell/autosuggest-candidates (prefix)
-    "Select the first eshell history candidate and shell completions that starts with PREFIX."
+    "Select history candidate and shell completions starting with PREFIX."
     (unless (or
              (cl-search "\"" prefix)
              (cl-search "[" prefix)
@@ -1305,7 +1304,7 @@ This function only return prefix when current point at eshell prompt line, avoid
           suggest-completions)
         )))
 
-  (defun aweshell/autosuggest (command &optional arg &rest ignored)
+  (defun aweshell/autosuggest (command &optional arg &rest _ignored)
     "`company-mode' backend to provide eshell history suggestion."
     (interactive (list 'interactive))
     (cl-case command
