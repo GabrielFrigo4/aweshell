@@ -9,6 +9,8 @@
 [![macOS](https://img.shields.io/badge/macOS-Supported-black?logo=apple&logoColor=white)](https://apple.com/)
 [![Windows](<https://img.shields.io/badge/Windows_(MSYS2)-Supported-purple?logo=gitforwindows&logoColor=white>)](https://msys2.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue?logo=gnu&logoColor=white)](https://www.gnu.org/licenses/gpl-3.0)
+[![Roadmap](https://img.shields.io/badge/🗺️_Roadmap-TODO.md-teal)](TODO.md)
+[![Contributing](https://img.shields.io/badge/🤝_Contributing-CONTRIBUTING.md-orange)](CONTRIBUTING.md)
 
 ---
 
@@ -172,6 +174,25 @@ make clean
 
 # Diagnóstico de ambiente e utilitários
 ./aweshell.sh doctor
+```
+
+---
+
+## 🚀 Setup do Projeto & Ganchos Git
+
+> 🤝 **Guia de Contribuição:** [CONTRIBUTING.md](CONTRIBUTING.md)
+
+Após clonar o repositório, execute o comando abaixo para ativar os quality gates locais (pre-commit, commit-msg):
+
+```sh
+make hooks
+```
+
+Para validar integridade, compilar e rodar a suíte completa de CI localmente:
+
+```sh
+make test    # Validação batch de todos os .el
+make ci      # Pipeline completo (test + compile + clean)
 ```
 
 ---

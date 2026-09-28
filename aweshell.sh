@@ -6,6 +6,17 @@ set -eu
 
 _AWESHELL_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+_self_heal_perms() {
+	if [ -d "${_AWESHELL_ROOT}/.git" ] && command -v git > "/dev/null" 2>&1; then
+		git -C "${_AWESHELL_ROOT}" config core.hooksPath .githooks 2> "/dev/null" || true
+	fi
+	if [ -d "${_AWESHELL_ROOT}/.githooks" ]; then
+		chmod 0755 "${_AWESHELL_ROOT}/.githooks/"* 2> "/dev/null" || true
+	fi
+	[ -f "${_AWESHELL_ROOT}/aweshell.sh" ] && chmod 0755 "${_AWESHELL_ROOT}/aweshell.sh" 2> "/dev/null" || true
+}
+_self_heal_perms
+
 _aweshell_help() {
 	cat <<- EOF
 		Aweshell — Interface Unificada de Componente
